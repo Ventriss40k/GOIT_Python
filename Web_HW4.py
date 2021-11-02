@@ -38,6 +38,9 @@ extensions = {
 
     'apk': ['apk']
 }
+# This is conversion of extension dict into list which looks like: [(key1,[val1,val2,val3]),(key2,[val3,val4,val5])]
+# Will be used later in sort_file_thread func
+ext_list = list(extensions.items())
 
 # Function to create folders from "extensions" dictionary
 # Check on existance of such folder included
@@ -51,6 +54,7 @@ def get_subfolder_paths(folder_path) -> list:
     subfolder_paths = [f.path for f in os.scandir(folder_path) if f.is_dir()] 
 
     return subfolder_paths
+
 
 # Function to recursively check directory for files, diving inside every folder
 # Returns list of paths to files
@@ -74,22 +78,24 @@ def recurs_get_file_paths(folder_path) -> list: # Функция возвращ�
 
     return final_result 
 
-# This is main func for sorting files
-def sort_files(folder_path):
-    file_paths = recurs_get_file_paths(folder_path)
-    ext_list = list(extensions.items())
-    # This is child func to sort_files, made to execute inside tread
-    def sort_file_tread(file_path):
-        extension = file_path.split('.')[-1] # split extension from file path
-        file_name = file_path.split('\\')[-1] # split filename from file path
 
-        for dict_key_int in range(len(ext_list)): # iterate throuth extension dict
-            if extension in ext_list[dict_key_int][1]: # check if extension is present in extension dict
-                print(f'Moving {file_name} in {ext_list[dict_key_int][0]} folder\n') 
-                os.rename(file_path, f'{main_path}\\{ext_list[dict_key_int][0]}\\{file_name}') # by renaming file path, we actualy move it to new folder
-# Running treads with sort_file_tread func
+# This func is for sorting files. Made to be used inside threads
+def sort_file_thread(file_path):
+    extension = file_path.split('.')[-1] # split extension from file path
+    file_name = file_path.split('\\')[-1] # split filename from file path
+
+    for dict_key_int in range(len(ext_list)): # iterate throuth extension dict
+        if extension in ext_list[dict_key_int][1]: # check if extension is present in extension dict
+            print(f'Moving {file_name} in {ext_list[dict_key_int][0]} folder\n') 
+            os.rename(file_path, f'{main_path}\\{ext_list[dict_key_int][0]}\\{file_name}') # by renaming file path, we actualy move it to new folder
+
+# Func to run dedicated sort_file_thread func inside threads
+def run_file_sorting_threads():
+    file_paths = recurs_get_file_paths(main_path)
+    # Running treads with sort_file_thread func
     with ThreadPoolExecutor(2) as pool:
-        pool.map(sort_file_tread,file_paths)
+        pool.map(sort_file_thread,file_paths)
+
 
 # Func to remove empty folders
 def remove_empty_folders(folder_path):
@@ -104,7 +110,7 @@ def remove_empty_folders(folder_path):
 if __name__ == "__main__":
     start_time = time()
     create_folders_from_list(main_path, extensions)
-    sort_files(main_path)
+    run_file_sorting_threads()
     remove_empty_folders(main_path)
     finish_time = time()-start_time
     print(finish_time)
