@@ -1,1 +1,1 @@
-# GOIT_Python
+# GOIT_Python homeworks
