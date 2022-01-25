@@ -4,7 +4,7 @@ from time import time
 from settings import MAIN_PATH, EXTENSIONS, EXT_LIST
 
 # Function to create folders from "EXTENSIONS" dictionary
-# Check on existance of such folder included
+# Check on existence of such folder included
 def create_folders_from_list(folder_path, folder_names):
     for folder in folder_names:
         if not os.path.exists(f'{folder_path}\\{folder}'):
@@ -54,7 +54,7 @@ def run_file_sorting_threads():
     file_paths = recurs_get_file_paths(MAIN_PATH)
     # Running treads with sort_file_thread func
     with ThreadPoolExecutor(2) as pool:
-        pool.map(sort_file_thread,file_paths)
+        pool.map(sort_file_thread, file_paths)
 
 
 # Function to get subfolders path (of 1st level nesting)
